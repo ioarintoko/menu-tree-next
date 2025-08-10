@@ -4,21 +4,28 @@ import { useEffect, useState } from 'react';
 import MenuTree from '@/components/MenuTree/MenuTree';
 import MenuForm from '@/components/MenuTree/MenuForm';
 import { getMenus, createMenu, updateMenu, deleteMenu, MenuItem } from '@/services/menuServices';
+import { Plus, Loader2 } from 'lucide-react';
+
+// Asumsi Anda punya type ini di tempat lain, jika tidak, bisa tambahkan
+// type MenuFormProps = {
+//   mode: 'add' | 'edit';
+//   menuToEdit?: MenuItem;
+//   menuList: MenuItem[];
+//   initialParentId?: number;
+//   onSuccess: (data: MenuItem) => void;
+//   onCancel: () => void;
+// };
 
 export default function MenuPage() {
   const [menuData, setMenuData] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Untuk form
-  const [showForm, setShowForm] = useState(false);
   const [formMode, setFormMode] = useState<'add' | 'edit'>('add');
   const [menuToEdit, setMenuToEdit] = useState<MenuItem | null>(null);
   const [parentForAdd, setParentForAdd] = useState<number | undefined>(undefined);
 
-  useEffect(() => {
-    fetchMenus();
-  }, []);
+  const [activeMenuId, setActiveMenuId] = useState<number | null>(null);
 
   async function fetchMenus() {
     setLoading(true);
@@ -33,25 +40,26 @@ export default function MenuPage() {
     }
   }
 
+  useEffect(() => {
+    fetchMenus();
+  }, []);
+
   const handleAddRoot = () => {
     setFormMode('add');
     setMenuToEdit(null);
     setParentForAdd(undefined);
-    setShowForm(true);
   };
 
   const handleAddChild = (parentId: number) => {
     setFormMode('add');
     setMenuToEdit(null);
     setParentForAdd(parentId);
-    setShowForm(true);
   };
 
   const handleEdit = (menu: MenuItem) => {
     setFormMode('edit');
     setMenuToEdit(menu);
     setParentForAdd(undefined);
-    setShowForm(true);
   };
 
   const handleDelete = async (id: number) => {
@@ -72,54 +80,87 @@ export default function MenuPage() {
       } else if (formMode === 'edit' && menuToEdit) {
         await updateMenu(menuToEdit.id, data);
       }
-      setShowForm(false);
       fetchMenus();
+      // Opsional: reset form setelah sukses
+      setMenuToEdit(null);
+      setParentForAdd(undefined);
     } catch (err: any) {
       alert(err.message || 'Gagal menyimpan data menu');
     }
   };
 
-  const handleFormCancel = () => {
-    setShowForm(false);
-  };
-
-  if (loading) return <p>Loading menu...</p>;
+  if (loading) return (
+    <div className="flex items-center justify-center h-screen bg-gray-100">
+      <Loader2 className="animate-spin text-blue-600" size={32} />
+    </div>
+  );
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Manajemen Menu</h1>
-      <button
-        className="mb-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        onClick={handleAddRoot}
-      >
-        Tambah Menu Root
-      </button>
-
-      {error && <p className="text-red-600 mb-4">{error}</p>}
-
-      {menuData.length > 0 ? (
-        <MenuTree
-          data={menuData}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          onAddChild={handleAddChild}
-        />
-      ) : (
-        <p>Data menu kosong</p>
-      )}
-
-      {showForm && (
-        <div className="mt-6 p-4 border rounded bg-gray-50 max-w-md">
-          <MenuForm
-            mode={formMode}
-            menuToEdit={menuToEdit ?? undefined}
-            menuList={menuData}
-            initialParentId={parentForAdd}
-            onSuccess={handleFormSuccess}
-            onCancel={handleFormCancel}
-          />
+    <div className="flex h-screen bg-gray-100">
+      {/* Sidebar Kiri - Menu Tree */}
+      <aside className="w-1/4 bg-white border-r border-gray-200 p-6 flex flex-col">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-gray-800">Menus</h2>
+          <button
+            onClick={handleAddRoot}
+            className="p-2 text-white bg-blue-600 rounded hover:bg-blue-700"
+            title="Tambah Menu Root"
+          >
+            <Plus size={18} />
+          </button>
         </div>
-      )}
+        
+        {error && (
+          <div className="p-4 mb-4 bg-red-100 text-red-700 rounded-lg text-sm">
+            {error}
+          </div>
+        )}
+
+        {menuData.length > 0 ? (
+          <div className="overflow-y-auto flex-grow">
+            <MenuTree
+              data={menuData}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onAddChild={handleAddChild}
+              activeMenuId={activeMenuId}
+            />
+          </div>
+        ) : (
+          <div className="p-4 text-center text-gray-500">
+            Data menu kosong
+          </div>
+        )}
+      </aside>
+
+      {/* Konten Kanan - Menu Form atau Detail */}
+      <main className="w-3/4 p-6 overflow-y-auto">
+        <h1 className="text-3xl font-bold text-gray-900 mb-6">
+          Menu Manager
+        </h1>
+
+        {/* Tampilkan MenuForm jika ada item yang diedit atau ditambahkan */}
+        {menuToEdit || (formMode === 'add') ? (
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <MenuForm
+              mode={formMode}
+              menuToEdit={menuToEdit ?? undefined}
+              menuList={menuData}
+              initialParentId={parentForAdd}
+              onSuccess={handleFormSuccess}
+              onCancel={() => {
+                setMenuToEdit(null);
+                setParentForAdd(undefined);
+                setFormMode('add');
+              }}
+            />
+          </div>
+        ) : (
+          <div className="bg-white p-6 rounded-lg shadow-md h-full flex items-center justify-center text-gray-500">
+            <p>Pilih menu di sisi kiri atau klik tombol tambah untuk memulai.</p>
+          </div>
+        )}
+      </main>
     </div>
   );
 }

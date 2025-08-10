@@ -14,6 +14,7 @@ interface MenuTreeProps {
   onEdit: (item: MenuItem) => void;
   onDelete: (id: number) => void;
   onAddChild: (parentId: number) => void;
+  activeMenuId: number | null;
 }
 
 const MenuTree: React.FC<MenuTreeProps> = ({
@@ -21,9 +22,10 @@ const MenuTree: React.FC<MenuTreeProps> = ({
   onEdit,
   onDelete,
   onAddChild,
+  activeMenuId,
 }) => {
   return (
-    <ul className="pl-4 border-l border-gray-300">
+    <ul className="pl-0 list-none">
       {data.map((item) => (
         <MenuNode
           key={item.id}
@@ -31,6 +33,7 @@ const MenuTree: React.FC<MenuTreeProps> = ({
           onEdit={onEdit}
           onDelete={onDelete}
           onAddChild={onAddChild}
+          activeMenuId={activeMenuId}
         />
       ))}
     </ul>
@@ -42,54 +45,84 @@ const MenuNode: React.FC<{
   onEdit: (item: MenuItem) => void;
   onDelete: (id: number) => void;
   onAddChild: (parentId: number) => void;
-}> = ({ item, onEdit, onDelete, onAddChild }) => {
+  activeMenuId: number | null;
+}> = ({ item, onEdit, onDelete, onAddChild, activeMenuId }) => {
   const [expanded, setExpanded] = useState(true);
   const hasChildren = item.children && item.children.length > 0;
+  const isActive = item.id === activeMenuId;
+
+  const handleItemClick = () => {
+    if (hasChildren) {
+      setExpanded(!expanded);
+    }
+    onEdit(item);
+  };
 
   return (
-    <li className="mb-1">
+    <li className="relative group/item">
+      {item.parentId !== null && (
+        <span
+          className="absolute left-0 w-4 h-full border-l border-gray-300"
+          style={{ top: '-12px', height: 'calc(100% + 12px)' }}
+        />
+      )}
       <div
-        className="flex items-center space-x-1 cursor-pointer select-none hover:bg-gray-100 p-1 rounded"
-        onClick={() => hasChildren && setExpanded(!expanded)}
+        className={`
+          flex items-center space-x-1 cursor-pointer select-none rounded p-2 text-sm relative z-10
+          ${isActive ? "bg-blue-100 text-blue-800 font-semibold" : "text-gray-700 hover:bg-gray-100"}
+          ${item.parentId !== null ? 'pl-8' : ''}
+        `}
       >
+        {item.parentId !== null && (
+          <span
+            className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-[1px] border-b border-gray-300"
+          />
+        )}
         {hasChildren ? (
-          expanded ? (
-            <ChevronDown size={16} className="text-gray-600" />
-          ) : (
-            <ChevronRight size={16} className="text-gray-600" />
-          )
+          <button onClick={() => setExpanded(!expanded)} className="p-1 -ml-1">
+            {expanded ? (
+              <ChevronDown size={16} className="text-gray-600" />
+            ) : (
+              <ChevronRight size={16} className="text-gray-600" />
+            )}
+          </button>
         ) : (
-          <span className="w-4" />
+          <span className="w-5" />
         )}
 
-        {item.url ? (
-          <a
-            href={item.url}
-            className="text-blue-600 hover:underline flex-1"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {item.name}
-          </a>
-        ) : (
-          <span className="font-medium text-gray-700 flex-1">{item.name}</span>
-        )}
+        <span
+          className="flex-1 font-medium"
+          onClick={handleItemClick}
+        >
+          {item.name}
+        </span>
 
-        <div className="flex space-x-2 ml-2" onClick={(e) => e.stopPropagation()}>
+        <div className="flex space-x-2 opacity-0 group-hover/item:opacity-100 transition-opacity">
           <button
-            onClick={() => onAddChild(item.id)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onAddChild(item.id);
+            }}
             title="Tambah Anak Menu"
             type="button"
           >
-            <PlusCircle
-              size={16}
-              className="text-green-600 hover:text-green-800"
-            />
+            <PlusCircle size={16} className="text-green-600 hover:text-green-800" />
           </button>
-          <button onClick={() => onEdit(item)} title="Edit Menu" type="button">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit(item);
+            }}
+            title="Edit Menu"
+            type="button"
+          >
             <Edit size={16} className="text-blue-600 hover:text-blue-800" />
           </button>
           <button
-            onClick={() => onDelete(item.id)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(item.id);
+            }}
             title="Hapus Menu"
             type="button"
           >
@@ -107,12 +140,15 @@ const MenuNode: React.FC<{
             transition={{ duration: 0.25, ease: "easeInOut" }}
             style={{ overflow: "hidden" }}
           >
-            <MenuTree
-              data={item.children || []}
-              onEdit={onEdit}
-              onDelete={onDelete}
-              onAddChild={onAddChild}
-            />
+            <div className="pl-4">
+              <MenuTree
+                data={item.children || []}
+                onEdit={onEdit}
+                onDelete={onDelete}
+                onAddChild={onAddChild}
+                activeMenuId={activeMenuId}
+              />
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

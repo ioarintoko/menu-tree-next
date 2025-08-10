@@ -26,7 +26,7 @@ const BASE_URL = "http://localhost:3000/api";
 
 export interface MenuItem {
   id: number; 
-  parentId?: number;
+  parentId?: number | null;
   name: string;
   url?: string;
   orderNo: number;
@@ -54,7 +54,7 @@ export async function createMenu(data: MenuItem): Promise<MenuItem> {
             data.parentId = pid;
         }
     } else {
-        data.parentId = 0; // ensure parentId is undefined if not set}
+        data.parentId = null; // ensure parentId is undefined if not set}
     }
   const res = await fetch(`${BASE_URL}/menus`, {
     method: "POST",
