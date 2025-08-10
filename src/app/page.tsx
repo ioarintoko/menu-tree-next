@@ -4,29 +4,22 @@ import { useEffect, useState } from 'react';
 import MenuTree from '@/components/MenuTree/MenuTree';
 import MenuForm from '@/components/MenuTree/MenuForm';
 import { getMenus, createMenu, updateMenu, deleteMenu, MenuItem } from '@/services/menuServices';
-import { Plus, Loader2 } from 'lucide-react';
-
-// Asumsi Anda punya type ini di tempat lain, jika tidak, bisa tambahkan
-// type MenuFormProps = {
-//   mode: 'add' | 'edit';
-//   menuToEdit?: MenuItem;
-//   menuList: MenuItem[];
-//   initialParentId?: number;
-//   onSuccess: (data: MenuItem) => void;
-//   onCancel: () => void;
-// };
+import { Plus, Loader2, Menu as MenuIcon, X } from 'lucide-react';
 
 export default function MenuPage() {
+  // ▶️ KEEP ALL YOUR EXISTING STATE AND FUNCTIONS EXACTLY AS THEY WERE
   const [menuData, setMenuData] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
   const [formMode, setFormMode] = useState<'add' | 'edit'>('add');
   const [menuToEdit, setMenuToEdit] = useState<MenuItem | null>(null);
   const [parentForAdd, setParentForAdd] = useState<number | undefined>(undefined);
-
   const [activeMenuId, setActiveMenuId] = useState<number | null>(null);
 
+  // ✅ ONLY NEW UI-RELATED STATE
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
+
+  // ===== YOUR EXISTING FUNCTIONS START =====
   async function fetchMenus() {
     setLoading(true);
     setError(null);
@@ -48,18 +41,21 @@ export default function MenuPage() {
     setFormMode('add');
     setMenuToEdit(null);
     setParentForAdd(undefined);
+    setShowMobileMenu(false); // Close mobile menu after action
   };
 
   const handleAddChild = (parentId: number) => {
     setFormMode('add');
     setMenuToEdit(null);
     setParentForAdd(parentId);
+    setShowMobileMenu(false); // Close mobile menu after action
   };
 
   const handleEdit = (menu: MenuItem) => {
     setFormMode('edit');
     setMenuToEdit(menu);
     setParentForAdd(undefined);
+    setShowMobileMenu(false); // Close mobile menu after action
   };
 
   const handleDelete = async (id: number) => {
@@ -81,13 +77,13 @@ export default function MenuPage() {
         await updateMenu(menuToEdit.id, data);
       }
       fetchMenus();
-      // Opsional: reset form setelah sukses
       setMenuToEdit(null);
       setParentForAdd(undefined);
     } catch (err: any) {
       alert(err.message || 'Gagal menyimpan data menu');
     }
   };
+  // ===== YOUR EXISTING FUNCTIONS END =====
 
   if (loading) return (
     <div className="flex items-center justify-center h-screen bg-gray-100">
@@ -96,17 +92,37 @@ export default function MenuPage() {
   );
 
   return (
-    <div className="flex h-screen bg-gray-100">
-      {/* Sidebar Kiri - Menu Tree */}
-      <aside className="w-1/4 bg-white border-r border-gray-200 p-6 flex flex-col">
+    <div className="flex flex-col md:flex-row h-screen bg-gray-100">
+      {/* Mobile Header */}
+      <div className="md:hidden flex items-center justify-between p-4 bg-white border-b">
+        <button onClick={() => setShowMobileMenu(!showMobileMenu)} className="p-2">
+          <MenuIcon size={24} />
+        </button>
+        <h1 className="text-xl font-bold">Menu Manager</h1>
+        <div className="w-10"></div> {/* Spacer */}
+      </div>
+
+      {/* Sidebar - Now Responsive */}
+      <aside className={`
+        ${showMobileMenu ? 'block' : 'hidden'} 
+        md:block w-full md:w-1/4 bg-white border-r border-gray-200 p-4 md:p-6
+        absolute md:relative inset-0 z-10 md:z-auto
+      `}>
+        <div className="md:hidden flex justify-end mb-4">
+          <button onClick={() => setShowMobileMenu(false)} className="p-2">
+            <X size={24} />
+          </button>
+        </div>
+
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-gray-800">Menus</h2>
+          
           <button
             onClick={handleAddRoot}
-            className="p-2 text-white bg-blue-600 rounded hover:bg-blue-700"
+            className="p-2 md:p-2 text-white bg-blue-600 rounded-full hover:bg-blue-700"
             title="Tambah Menu Root"
           >
-            <Plus size={18} />
+            <Plus size={20} className="md:size-4" />
           </button>
         </div>
         
@@ -117,7 +133,7 @@ export default function MenuPage() {
         )}
 
         {menuData.length > 0 ? (
-          <div className="overflow-y-auto flex-grow">
+          <div className="overflow-y-auto h-[calc(100%-100px)]">
             <MenuTree
               data={menuData}
               onEdit={handleEdit}
@@ -133,15 +149,14 @@ export default function MenuPage() {
         )}
       </aside>
 
-      {/* Konten Kanan - Menu Form atau Detail */}
-      <main className="w-3/4 p-6 overflow-y-auto">
-        <h1 className="text-3xl font-bold text-gray-900 mb-6">
+      {/* Main Content */}
+      <main className="flex-1 p-4 md:p-6 overflow-y-auto">
+        <h1 className="hidden md:block text-3xl font-bold text-gray-900 mb-6">
           Menu Manager
         </h1>
 
-        {/* Tampilkan MenuForm jika ada item yang diedit atau ditambahkan */}
         {menuToEdit || (formMode === 'add') ? (
-          <div className="bg-white p-6 rounded-lg shadow-md">
+          <div className="bg-white p-4 md:p-6 rounded-lg shadow-md">
             <MenuForm
               mode={formMode}
               menuToEdit={menuToEdit ?? undefined}
@@ -157,7 +172,17 @@ export default function MenuPage() {
           </div>
         ) : (
           <div className="bg-white p-6 rounded-lg shadow-md h-full flex items-center justify-center text-gray-500">
-            <p>Pilih menu di sisi kiri atau klik tombol tambah untuk memulai.</p>
+            <p className="md:hidden text-center">
+              <button 
+                onClick={() => setShowMobileMenu(true)}
+                className="text-blue-600 underline"
+              >
+                Tap to open menu
+              </button>
+            </p>
+            <p className="hidden md:block">
+              Pilih menu di sisi kiri atau klik tombol tambah untuk memulai.
+            </p>
           </div>
         )}
       </main>

@@ -97,7 +97,8 @@ const MenuNode: React.FC<{
           {item.name}
         </span>
 
-        <div className="flex space-x-2 opacity-0 group-hover/item:opacity-100 transition-opacity">
+        {/* Perubahan utama di sini - tombol action */}
+        <div className="flex space-x-2 opacity-100 md:opacity-0 md:group-hover/item:opacity-100 transition-opacity">
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -105,6 +106,7 @@ const MenuNode: React.FC<{
             }}
             title="Tambah Anak Menu"
             type="button"
+            className="p-1 bg-green-50 rounded hover:bg-green-100"
           >
             <PlusCircle size={16} className="text-green-600 hover:text-green-800" />
           </button>
@@ -115,6 +117,7 @@ const MenuNode: React.FC<{
             }}
             title="Edit Menu"
             type="button"
+            className="p-1 bg-blue-50 rounded hover:bg-blue-100"
           >
             <Edit size={16} className="text-blue-600 hover:text-blue-800" />
           </button>
@@ -125,6 +128,7 @@ const MenuNode: React.FC<{
             }}
             title="Hapus Menu"
             type="button"
+            className="p-1 bg-red-50 rounded hover:bg-red-100"
           >
             <Trash2 size={16} className="text-red-600 hover:text-red-800" />
           </button>
