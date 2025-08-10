@@ -1,36 +1,72 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-## Getting Started
+# Proyek Frontend - Tree Menu CRUD
 
-First, run the development server:
+Proyek ini adalah aplikasi frontend untuk mengelola struktur menu dalam format tree. Aplikasi ini mendukung operasi CRUD (Create, Read, Update, Delete) dengan pembaruan data secara realtime.
+
+## Fitur Utama
+
+- **Tampilan Tree Interaktif:** Menampilkan data menu dalam format hierarki pohon yang intuitif.
+- **Operasi CRUD:** Memungkinkan pengguna untuk membuat, membaca, memperbarui, dan menghapus item menu.
+- **Realtime Update:** Setiap perubahan data akan diperbarui secara otomatis di seluruh aplikasi tanpa perlu memuat ulang halaman.
+- **Hierarki Tak Terbatas:** Struktur menu mendukung anak (child) yang tidak terbatas, memberikan fleksibilitas penuh dalam pembuatan menu.
+- **Animasi dan Visual:** Menggunakan Framer Motion untuk animasi, Tailwind CSS untuk styling, dan Lucide React untuk ikon. Garis penunjuk (indicator lines) dibuat untuk memperjelas hubungan antar menu.
+
+## Teknologi yang Digunakan
+
+- Framework: **Next.js**
+- Styling: **Tailwind CSS**
+- Animasi: **Framer Motion**
+- Ikon: **Lucide React**
+- Data Fetching: **Axios**
+
+## Prasyarat
+
+Pastikan Anda telah menginstal **Node.js** dan **npm** (atau **yarn**) di sistem Anda.
+
+## Instalasi dan Menjalankan Aplikasi
+
+### 1. Jalankan Backend Terlebih Dahulu
+
+Pastikan server backend Anda sudah berjalan. Aplikasi frontend ini mengambil data dari API di `http://localhost:3000/api`.  
+Jika URL backend Anda berbeda, silakan sesuaikan di file `.env.local`.
+
+### 2. Instalasi Proyek Frontend
+
+```bash
+git clone https://github.com/ioarintoko/menu-tree-next
+cd menu-tree-next
+npm install
+# atau
+yarn install
+```
+
+### 3. Menjalankan Frontend
 
 ```bash
 npm run dev
-# or
+# atau
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Aplikasi akan berjalan di `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Konfigurasi API
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Aplikasi ini mengambil data dari API backend. Buat file `.env.local` di root folder proyek dan tambahkan URL API Anda.
 
-## Learn More
+Contoh isi file `.env.local`:
 
-To learn more about Next.js, take a look at the following resources:
+```env
+NEXT_PUBLIC_API_URL=http://localhost:3000/api
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Pengembangan Lebih Lanjut
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Beberapa fitur yang direncanakan untuk pengembangan di masa depan:
 
-## Deploy on Vercel
+- **Maksimal Kedalaman (Max Depth):** Menambahkan opsi untuk membatasi kedalaman hierarki menu.
+- **Multi-Parent:** Mengimplementasikan fitur di mana sebuah item menu dapat memiliki lebih dari satu parent.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**Terima kasih telah menggunakan proyek ini. Jika ada pertanyaan atau kontribusi, silakan hubungi atau buat issue di repository.**
